@@ -132,11 +132,15 @@ export class HomePageComponent implements OnInit {
     ngOnInit(): void {
         this.checkDBList();
 
-        const auth: any = getParam.kiosk ? {
+        const auth: any = (getParam.kiosk ? {
             dbURL: getParam.db_host,
             login: getParam.db_login,
             password: getParam.db_pass
-        } : getStorage('AUTH_DATA');
+        } : getStorage('AUTH_DATA')) || {
+            dbURL: location.origin,
+            login: 'default',
+            password: ''
+        };
         // console.log("auth", !!auth?.dbURL)
 
         if (auth?.dbURL) {
