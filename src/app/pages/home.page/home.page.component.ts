@@ -1,8 +1,8 @@
 import { Functions } from '@app/helper/functions';
 import { DocsService } from '@app/services/docs.service';
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { ApiService, QUERY_LIST } from 'src/app/services/api.service';
-import { getStorage, saveToFile, setLink, setStorage } from '@app/helper/windowFunctions';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, HostListener } from '@angular/core';
+import { ApiService, FLUX_VERSION, QUERY_LIST } from 'src/app/services/api.service';
+import { emitWindowResize, getStorage, saveToFile, setLink, setStorage } from '@app/helper/windowFunctions';
 import { Row } from '@app/models/grid.model';
 import { Dictionary } from '@app/components/ace-editor-ext/dictionary-default';
 import { promiseWait, cloneObject } from '@app/helper/functions';
@@ -26,6 +26,8 @@ export class HomePageComponent implements OnInit {
     dbLink: string = '';
     dbLogin: string = '';
     dbPassword: string = '';
+    isFlux: boolean = false;
+
     sqlRequest: any = '';
     _selectedDB: any;
     readyToWork = false;
@@ -129,17 +131,26 @@ export class HomePageComponent implements OnInit {
 
     }
 
+    @HostListener('document:mousemove', ['$event'])
+    emitWindowResize() {
+        emitWindowResize();
+    }
+
+
+
     ngOnInit(): void {
         this.checkDBList();
 
         const auth: any = (getParam.kiosk ? {
             dbURL: getParam.db_host,
             login: getParam.db_login,
-            password: getParam.db_pass
+            password: getParam.db_pass,
+            isFlux: getParam.isFlux
         } : getStorage('AUTH_DATA')) || {
             dbURL: location.origin,
             login: 'default',
-            password: ''
+            password: '',
+            isFlux: false
         };
         // console.log("auth", !!auth?.dbURL)
 
@@ -147,6 +158,7 @@ export class HomePageComponent implements OnInit {
             this.dbLink = auth.dbURL;
             this.dbLogin = auth.login;
             this.dbPassword = auth.password;
+            this.isFlux = auth.isFlux;
         } else {
             this.isAccess = false;
         }
@@ -402,17 +414,19 @@ export class HomePageComponent implements OnInit {
             this.dbLink = event.dbLink;
             this.dbLogin = event.dbLogin;
             this.dbPassword = event.dbPassword;
+            this.isFlux = !!event.isFlux;
         }
         const auth = {
             dbURL: this.dbLink,
             login: this.dbLogin,
             password: this.dbPassword,
+            isFlux: this.isFlux,
         };
         this.apiService.setLoginData(auth);
         // const res = await this.SQL(QUERY_LIST.getDatabases, true);
         let res;
         try {
-            await this.apiService.runQuery(QUERY_LIST.getDatabases)
+            await this.apiService.runQuery(this.isFlux ? FLUX_VERSION : QUERY_LIST.getDatabases)
             res = true;
         } catch (e) {
             res = false;

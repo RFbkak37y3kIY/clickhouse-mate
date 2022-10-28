@@ -7,10 +7,10 @@ import { environment } from './environments/environment';
 if (environment.production) {
   enableProdMode();
 }
-console.log = () => { };
-console.error = () => { };
-console.info = () => { };
-console.warn = () => { };
+// console.log = () => { };
+// console.error = () => { };
+// console.info = () => { };
+// console.warn = () => { };
 
 platformBrowserDynamic().bootstrapModule(AppModule)
   .catch(err => console.error(err));

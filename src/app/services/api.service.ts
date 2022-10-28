@@ -8,6 +8,9 @@ export const QUERY_LIST = {
     useDatabase: (dbName: string) => `USE ${dbName}`,
     getTables: 'SHOW TABLES',
 }
+export const FLUX_VERSION = `import "array"
+import "runtime"
+array.from(rows: [{version: runtime.version()}])`;
 
 @Injectable({
     providedIn: 'root'
@@ -18,6 +21,7 @@ export class ApiService {
     login = '';
     password = '';
     dbURL = '';
+    isFlux = false;
     isReadonly: boolean = true;
     private bufferParams: any;
     constructor(
@@ -28,10 +32,12 @@ export class ApiService {
     setReadOnly(bool: boolean) {
         this.isReadonly = bool;
     }
-    setLoginData({ dbURL, login, password }: any) {
+    setLoginData({ dbURL, login, password, isFlux }: any) {
+        console.log('setLoginData', { dbURL, login, password, isFlux });
         this.dbURL = dbURL;
         this.login = login;
         this.password = password;
+        this.isFlux = isFlux;
     }
     private params(postData: any) {
         if (
@@ -72,12 +78,17 @@ export class ApiService {
         return this.bufferParams;
     }
 
-    post(dbURL: string = this.dbURL, postData: any) {
+    post(dbURL: string = this.dbURL, postData: any, isFlux = this.isFlux) {
         const { query = '' } = postData;
-        const getStr = this.params(postData);
+        // const getStr = this.params(postData);
         return new Observable<any>((observer) => {
-            this.work.post(`${dbURL}${getStr}`, query, [
-                { 'Content-Type': 'text/plain; charset=utf-8' }
+            this.work.post(isFlux ? `${dbURL}/api/v2/query` : `${dbURL}${this.params(postData)}`, query, [
+                isFlux ? {
+                    'Authorization': 'Basic ' + btoa(this.login + ':' + this.password),
+                    'Content-Type': 'application/vnd.flux'
+                } : {
+                    'Content-Type': 'text/plain; charset=utf-8'
+                }
             ]).then((response) => {
                 if (response === '') {
                     return observer.next(null);
@@ -98,8 +109,8 @@ export class ApiService {
         });
     }
 
-    runQuery(query: string) {
-        return lastValueFrom(this.post(this.dbURL, { query }))
+    runQuery(query: string, isFlux = this.isFlux) {
+        return lastValueFrom(this.post(this.dbURL, { query }, isFlux))
     }
 }
 export function rndStr() {

@@ -123,7 +123,6 @@
                         </span>
                     </div>
                 </mat-expansion-panel>
-
                 <mat-expansion-panel
                     hideToggle
                     *ngIf="isDocsShows"
@@ -155,12 +154,19 @@
                     [order]="0"
                     style="position: relative"
                 >
-                    <ace-editor-ext
+                    <app-monaco-wrapper
                         [isDarkMode]="isDarkMode"
                         [(sqlRequest)]="sqlRequest"
                         (ready)="onClickRun($event)"
                         [dictionaryFull]="dictionary"
-                    ></ace-editor-ext>
+                    ></app-monaco-wrapper>
+
+                    <!-- <ace-editor-ext
+                        [isDarkMode]="isDarkMode"
+                        [(sqlRequest)]="sqlRequest"
+                        (ready)="onClickRun($event)"
+                        [dictionaryFull]="dictionary"
+                    ></ace-editor-ext> -->
                 </as-split-area>
                 <as-split-area [size]="90" #containerSplitter>
                     <mat-tab-group class="mini-tabs">
@@ -180,7 +186,11 @@
                                 <ng-container
                                     *ngIf="details?.length === 0; else hasData"
                                 >
-                                    <h1 *ngIf="!isLoadingDetails && readyToWork">No Data</h1>
+                                    <h1
+                                        *ngIf="!isLoadingDetails && readyToWork"
+                                    >
+                                        No Data
+                                    </h1>
                                     <div
                                         class="error-message"
                                         mat-flat-button
@@ -245,7 +255,7 @@
 
 <app-login-form
     [isAccess]="isAccess"
-    [settings]="{ dbLink, dbLogin, dbPassword }"
+    [settings]="{ dbLink, dbLogin, dbPassword, isFlux }"
     [errorMessage]="authErrorMessage"
     [successMessage]="authSuccessMessage"
     (ready)="connectToDB($event)"

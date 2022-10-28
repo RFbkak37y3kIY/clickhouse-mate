@@ -22,13 +22,10 @@
                     mode="indeterminate"
                     *ngIf="inProcess"
                 ></mat-progress-bar>
-                <mat-grid-list cols="7" rowHeight="1:2">
+                <mat-grid-list cols="6" rowHeight="1:2">
                     <mat-grid-tile [colspan]="2">
                         <div class="flex-column">
-                            <mat-selection-list
-                                #dbServer
-                                [multiple]="false"
-                            >
+                            <mat-selection-list #dbServer [multiple]="false">
                                 <mat-list-option
                                     *ngFor="
                                         let dbServer of dbItems;
@@ -98,7 +95,7 @@
                             </mat-selection-list>
                         </div>
                     </mat-grid-tile>
-                    <mat-grid-tile [colspan]="5">
+                    <mat-grid-tile [colspan]="4">
                         <div class="flex-column">
                             <mat-form-field appearance="fill">
                                 <mat-label>ClickHouse HTTP URL</mat-label>
@@ -127,6 +124,11 @@
                                     [(ngModel)]="settings.dbPassword"
                                 />
                             </mat-form-field>
+                            <mat-slide-toggle
+                                color="primary"
+                                [(ngModel)]="settings.isFlux"
+                                >is Flux server</mat-slide-toggle
+                            >
                         </div>
                     </mat-grid-tile>
                 </mat-grid-list>

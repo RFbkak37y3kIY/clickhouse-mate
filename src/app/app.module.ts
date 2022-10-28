@@ -27,11 +27,25 @@ import { NgxUplotModule } from 'ngx-uplot';
 import { StoreModule } from '@ngrx/store';
 import { reducers, metaReducers } from './reducers';
 import { EffectsModule } from '@ngrx/effects';
+import { MonacoEditorModule, NgxMonacoEditorConfig } from 'ngx-monaco-editor';
+import { MonacoWrapperComponent } from './components/monaco-wrapper/monaco-wrapper.component';
+
+const monacoConfig: NgxMonacoEditorConfig = {
+    // baseUrl: 'app-name/assets',
+    // configure base path cotaining monaco-editor directory after build default: './assets'
+    defaultOptions: { scrollBeyondLastLine: false },
+    // pass default options to be used
+    onMonacoLoad: () => {
+        console.log((<any>window).monaco);
+    }
+    // here monaco object will be available as window.monaco use this function to extend monaco editor functionalities.
+};
 @NgModule({
     declarations: [
         AppComponent,
         HomePageComponent,
-        DialogKioskComponent
+        DialogKioskComponent,
+        MonacoWrapperComponent
     ],
     imports: [
         BrowserModule,
@@ -51,11 +65,12 @@ import { EffectsModule } from '@ngrx/effects';
         PopupTextModule,
         NgxUplotModule,
         StoreModule.forRoot(reducers, {
-      metaReducers
-    }),
+            metaReducers,
+        }),
         EffectsModule.forRoot([]),
         // MatDialogModule,
         // MatButtonModule,
+        MonacoEditorModule.forRoot(monacoConfig),
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     providers: [

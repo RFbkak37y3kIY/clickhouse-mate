@@ -10,6 +10,7 @@ export interface HashParams {
     chart?: boolean;
     panel?: boolean;
     query_field?: boolean;
+    isFlux?: boolean;
 }
 export let getParam: HashParams = {
     db_host: "",
@@ -22,6 +23,7 @@ export let getParam: HashParams = {
     query_field: true,
     table: true,
     chart: true,
+    isFlux: false
 };
 
 @Injectable({
@@ -63,6 +65,9 @@ export class GetParamsService {
                     break;
                 case 'table':
                     getParam.table = !!(+value);
+                    break;
+                case 'flux':
+                    getParam.isFlux = !!(+value);
                     break;
             }
         })

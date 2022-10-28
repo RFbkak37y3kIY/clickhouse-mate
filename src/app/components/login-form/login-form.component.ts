@@ -175,9 +175,9 @@ export class LoginFormComponent implements OnInit, AfterViewInit {
             // console.log(this.settings);
             this.cdr.detectChanges();
         } catch (e) {
-            requestAnimationFrame(() => {
-                this.selectConnection(event);
-            })
+            // requestAnimationFrame(() => {
+            //     this.selectConnection(event);
+            // })
         }
     }
     removeConnection() {

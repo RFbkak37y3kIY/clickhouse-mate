@@ -11,6 +11,8 @@ import { MatListModule } from '@angular/material/list';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 @NgModule({
     imports: [
         CommonModule,
@@ -23,7 +25,8 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
         MatListModule,
         MatGridListModule,
         MatIconModule,
-        MatProgressBarModule
+        MatProgressBarModule,
+        MatSlideToggleModule
     ],
     declarations: [LoginFormComponent],
     exports: [LoginFormComponent]
