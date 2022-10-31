@@ -125,8 +125,8 @@ csv.from(csv: string(v: response.body), mode: "raw")`,
             key: 'HTTP',
             value: `import "experimental/http/requests"
 
-            response = requests.post(url: "http://example.com")
-            requests.peek(response: response)`,
+response = requests.post(url: "http://example.com")
+requests.peek(response: response)`,
         }, {
             key: 'HTTP JSON',
             value: `import "experimental/http/requests"
