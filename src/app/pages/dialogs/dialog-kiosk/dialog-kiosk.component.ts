@@ -20,6 +20,7 @@ export class DialogKioskComponent implements OnInit, AfterContentChecked {
         chart: true,
         panel: false,
         query_field: true,
+        flux: false
     }
 
     link: string = "";
@@ -35,6 +36,8 @@ export class DialogKioskComponent implements OnInit, AfterContentChecked {
         this.config.db_login = data.dbLogin;
         // this.config.db_pass = data.dbPassword;
         this.config.query = data.sqlRequest;
+        this.config.flux = data.isFlux;
+
         this.config.kiosk = true;
     }
     getHash() {

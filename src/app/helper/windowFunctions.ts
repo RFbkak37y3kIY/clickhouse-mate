@@ -64,6 +64,9 @@ export function setLink(query: string = '') {
             case 'table':
                 config.table = !!(+value);
                 break;
+            case 'flux':
+                config.flux = !!(+value);
+                break;
         }
     })
     config.query = decodeURI(query + '');

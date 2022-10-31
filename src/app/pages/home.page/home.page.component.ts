@@ -1,4 +1,4 @@
-import { Functions } from '@app/helper/functions';
+import { convertFlux, Functions } from '@app/helper/functions';
 import { DocsService } from '@app/services/docs.service';
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, HostListener } from '@angular/core';
 import { ApiService, FLUX_VERSION, QUERY_LIST } from 'src/app/services/api.service';
@@ -291,7 +291,13 @@ export class HomePageComponent implements OnInit {
 
     formatData(data: any) {
         data = data || { meta: [], data: [] };
-        // console.log(data);
+        console.log('0', {data});
+        try {
+            if (this.isFlux) {
+                data = convertFlux(data)
+            }
+        } catch (err) { }
+        console.log('1', {data});
         if (typeof data !== 'object') {
             this.details = data;
         } else {
@@ -591,7 +597,8 @@ export class HomePageComponent implements OnInit {
                 dbLink: this.dbLink,
                 dbLogin: this.dbLogin,
                 dbPassword: this.dbPassword,
-                sqlRequest: this.sqlRequest
+                sqlRequest: this.sqlRequest,
+                isFlux: this.isFlux
             },
         });
 
