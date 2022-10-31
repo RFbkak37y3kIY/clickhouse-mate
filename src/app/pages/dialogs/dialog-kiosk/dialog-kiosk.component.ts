@@ -69,7 +69,7 @@ export class DialogKioskComponent implements OnInit, AfterContentChecked {
                     return '';
                 }
                 if (key === 'query') {
-                    return `${key}=${encodeURI(value + '')}`
+                    return `${key}=${encodeURIComponent(value + '')}`
                 }
                 if (+this.config.kiosk === 1 && key !== 'query') {
                     if (

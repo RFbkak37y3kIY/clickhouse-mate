@@ -29,7 +29,11 @@ export function getUriJson(): any {
         return null;
     }
 }
-export function setLink(query: string = '') {
+export function setLink(query: string = '', options: any = null) {
+    // dbLink: this.dbLink,
+    //         dbLogin: this.dbLogin,
+    //         dbPassword: this.dbPassword,
+    //         isFlux: this.isFlux,
     const config: any = {};
     const params: any[] = location.hash?.replace('#', '')?.split("&")?.map((i: any) => i.split('=')) || [];
     params.forEach(([key, value]) => {
@@ -38,13 +42,13 @@ export function setLink(query: string = '') {
                 config.chart = !!(+value);
                 break;
             case 'db_host':
-                config.db_host = value;
+                config.db_host = options?.dbLink || value;
                 break;
             case 'db_login':
-                config.db_login = value;
+                config.db_login = options?.dbLogin ||value;
                 break;
             case 'db_pass':
-                config.db_pass = value;
+                config.db_pass = options?.dbPassword || value;
                 break;
             case 'kiosk':
                 config.kiosk = !!(+value);
@@ -56,7 +60,7 @@ export function setLink(query: string = '') {
                 config.panel = !!(+value);
                 break;
             case 'query':
-                config.query = decodeURI(value + '') || value;
+                config.query = decodeURIComponent(value + '') || value;
                 break;
             case 'query_field':
                 config.query_field = !!(+value);
@@ -65,20 +69,23 @@ export function setLink(query: string = '') {
                 config.table = !!(+value);
                 break;
             case 'flux':
-                config.flux = !!(+value);
+                config.flux = options?.isFlux || !!(+value);
                 break;
         }
     })
-    config.query = decodeURI(query + '');
+    config.query = decodeURIComponent(query + '');
     return '#' +
         Object.entries(config).map(([key, value]: [string, any]) => {
-            if (!value && typeof value !== 'boolean') {
+            if (key !== 'flux' && !value && typeof value !== 'boolean') {
                 return '';
             }
             if (key === 'query') {
-                return `${key}=${encodeURI(value + '')}`
+                return `${key}=${encodeURIComponent(value + '')}`
             }
-            if (+config.kiosk === 1 && key !== 'query') {
+            // if (
+            //     +config.kiosk === 1 &&
+            //     key !== 'query'
+            // ) {
                 if (
                     (key === 'panel' && +value === 1) ||
                     (key === 'query_field' && +value === 1) ||
@@ -96,9 +103,9 @@ export function setLink(query: string = '') {
                 if (typeof value === 'boolean') {
                     return `${key}=${+value}`
                 }
-            } else {
-                return '';
-            }
+            // } else {
+            //     return '';
+            // }
 
             return `${key}=${value}`
 

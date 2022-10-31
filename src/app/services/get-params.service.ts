@@ -58,7 +58,7 @@ export class GetParamsService {
                     getParam.panel = !!(+value);
                     break;
                 case 'query':
-                    getParam.query = decodeURI(value + '') || value;
+                    getParam.query = decodeURIComponent(value + '') || value;
                     break;
                 case 'query_field':
                     getParam.query_field = !!(+value);

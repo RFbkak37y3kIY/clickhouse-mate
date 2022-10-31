@@ -72,45 +72,47 @@ export class HomePageComponent implements OnInit {
         {
             key: 'Version',
             value: `import "array"
-            import "runtime"
-            array.from(rows: [{version: runtime.version()}])`,
+import "runtime"
+array.from(rows: [{version: runtime.version()}])`,
         }, {
             key: 'Generate',
             value: `import g "generate"
-            g.from(start: 2022-04-01T00:00:00Z, stop: 2022-04-01T00:03:00Z, count: 5, fn: (n) => n+1)`,
+g.from(start: 2022-04-01T00:00:00Z, stop: 2022-04-01T00:03:00Z, count: 5, fn: (n) => n+1)`,
         }, {
             key: 'Sample Data', value:
                 `import "sampledata"
 
-            sampledata.int()
-                |> group(columns: ["_time", "tag"])`,
-        }, {
-            key: 'BTC', value: `import "array"
-import "experimental/json"
-import "experimental/http/requests"
-import "strings"
-import "regexp"
-import "experimental/array"
-import "types"
+sampledata.int()
+    |> group(columns: ["_time", "tag"])`,
+        },
+//         {
+//             key: 'BTC', value: `import "array"
+// import "experimental/json"
+// import "experimental/http/requests"
+// import "strings"
+// import "regexp"
+// import "experimental/array"
+// import "types"
 
-api_key = "8e90abe4-b320-4af7-8591-08d29a6e5f1c"
-url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?CMC_PRO_API_KEY=$\{api_key\}&limit=10"
+// api_key = "8e90abe4-b320-4af7-8591-08d29a6e5f1c"
+// url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?CMC_PRO_API_KEY=$\{api_key\}&limit=10"
 
-response = requests.get(url:url)
-json_s = string(v: response.body)
+// response = requests.get(url:url)
+// json_s = string(v: response.body)
 
-s1 = regexp.replaceAllString(r: /"platform":(null,|\{[^\}]+\},)/, v: json_s, t:"")
-s2 = strings.replaceAll(v: s1, t: "\"self_reported_circulating_supply\":null,", u: "",)
-s3 = strings.replaceAll(v: s2, t: "\"self_reported_market_cap\":null,", u: "")
-s4 = strings.replaceAll(v: s3, t: "\"max_supply\":null,", u: "\"max_supply\": 0,")
-s5 = strings.replaceAll(v: s4, t: "\"error_message\":null,", u: "")
-s6 = strings.replaceAll(v: s5, t: "\"notice\":null,", u: "")
-data = json.parse(data: bytes(v: s6))
-array.from(rows: data.data |>
-    array.map(
-    fn: (x) => ({ price:x.quote.USD.price, name: x.name, symbol: x.symbol, _time: time(v: x.last_updated), has_payment: length(arr: x.tags |> array.filter(fn: (x) => x == "payments"))
-})))`,
-        }, {
+// s1 = regexp.replaceAllString(r: /"platform":(null,|\{[^\}]+\},)/, v: json_s, t:"")
+// s2 = strings.replaceAll(v: s1, t: "\"self_reported_circulating_supply\":null,", u: "",)
+// s3 = strings.replaceAll(v: s2, t: "\"self_reported_market_cap\":null,", u: "")
+// s4 = strings.replaceAll(v: s3, t: "\"max_supply\":null,", u: "\"max_supply\": 0,")
+// s5 = strings.replaceAll(v: s4, t: "\"error_message\":null,", u: "")
+// s6 = strings.replaceAll(v: s5, t: "\"notice\":null,", u: "")
+// data = json.parse(data: bytes(v: s6))
+// array.from(rows: data.data |>
+//     array.map(
+//     fn: (x) => ({ price:x.quote.USD.price, name: x.name, symbol: x.symbol, _time: time(v: x.last_updated), has_payment: length(arr: x.tags |> array.filter(fn: (x) => x == "payments"))
+// })))`,
+//         },
+        {
             key: 'Fetch CSV', value: `import "csv"
 import "experimental"
 import "experimental/http/requests"
@@ -191,15 +193,19 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
     }
 
     checkDBList() {
-        const dbItems = getStorage('dbItems');
+        const dbItems = getStorage('dbItems') || [];
         const AUTH_DATA: any = getStorage('AUTH_DATA');
-        if (AUTH_DATA && !dbItems.find((dbItem: any) => dbItem?.value?.dbLink === AUTH_DATA?.dbURL)) {
+        if (!dbItems || !AUTH_DATA) {
+            return;
+        }
+        if (!dbItems.find((dbItem: any) => dbItem?.value?.dbLink === AUTH_DATA?.dbURL)) {
             const rx = /[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+/;
             const temp = {
                 value: {
                     dbLink: AUTH_DATA.dbURL,
                     dbLogin: AUTH_DATA.login,
                     dbPassword: AUTH_DATA.password,
+                    isFlux: !!AUTH_DATA.isFlux,
                     isSucceeded: true
                 },
                 viewValue: (AUTH_DATA.dbURL + '').match(rx)?.[0],
@@ -219,9 +225,9 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
 
 
     ngOnInit(): void {
-        this.checkDBList();
 
-        const auth: any = (getParam.kiosk ? {
+
+        const auth: any = (getParam.db_host ? {
             dbURL: getParam.db_host,
             login: getParam.db_login,
             password: getParam.db_pass,
@@ -417,12 +423,17 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
     }
 
     setHash() {
-        if (!getParam.kiosk) {
-            location.hash = '#query=' + encodeURI(this.sqlRequest);
-        } else {
-            location.hash = setLink(this.sqlRequest);
-            // console.log(location.hash)
-        }
+        // if (!getParam.kiosk) {
+        //     location.hash = '#query=' + encodeURIComponent(this.sqlRequest);
+        // } else {
+        location.hash = setLink(this.sqlRequest, {
+            dbLink: this.dbLink,
+            dbLogin: this.dbLogin,
+            dbPassword: this.dbPassword,
+            isFlux: this.isFlux,
+        });
+        // console.log(location.hash)
+        // }
     }
 
     keyOfSqlHistory() {
@@ -526,7 +537,8 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
             this.errorMessage = '';
             this.authSuccessMessage = '';
             if (!isTestConnection) {
-                setStorage('AUTH_DATA', auth)
+                setStorage('AUTH_DATA', auth);
+                this.checkDBList();
                 // this.formatData({ meta: [], data: [] });
                 this.isAccess = true;
                 this.getHash();
