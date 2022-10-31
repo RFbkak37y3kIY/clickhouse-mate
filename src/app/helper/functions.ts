@@ -1,5 +1,7 @@
 // import { Md5 } from 'ts-md5/dist/md5';
+// import * as Papa from 'papaparse/papaparse.min';
 
+declare const Papa: any;
 export class Functions {
     static JSON_parse(jsonString: string): any {
         try {
@@ -80,3 +82,32 @@ export function JSON_parse(jsonString: string): any {
         return null;
     }
 }
+export function convertFlux(csv: any) {
+    try {
+      var response: any = {
+        meta: [],
+        data: [],
+        statistics: { elapsed: 0.360986682, rows_read: 0, bytes_read: 0 },
+      };
+      var json: any = Papa.parse(csv, {
+        header: true,
+        comments: true,
+        dynamicTyping: true,
+      });
+      response.data = json.data.map(function (item: any) {
+        delete item[""];
+        delete item.table;
+        delete item.result;
+        return item;
+      });
+      response.data.length = response.data.length - 2;
+      // response.meta = json.meta.fields.slice(3, json.meta.fields.length);
+      for (const [key, value] of Object.entries(response?.data?.[0])) {
+        response.meta.push({ name: key as any, type: typeof value });
+      }
+      response.rows = response.data.length;
+      return response;
+    } catch (e) {
+      return csv;
+    }
+  }

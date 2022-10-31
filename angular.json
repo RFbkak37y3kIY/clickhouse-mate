@@ -42,7 +42,7 @@
                             "src/styles.scss"
                         ],
                         "scripts": [
-
+                            "./node_modules/papaparse/papaparse.min.js"
                         ],
                         "webWorkerTsConfig": "tsconfig.worker.json"
                     },
