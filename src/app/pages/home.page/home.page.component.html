@@ -275,5 +275,6 @@
     (ready)="connectToDB($event)"
     (testConnection)="connectToDB($event, true)"
     (changeDbItems)="setDBItems($event)"
+    (cancel)="isAccess = true"
 ></app-login-form>
 <app-popup-text></app-popup-text>

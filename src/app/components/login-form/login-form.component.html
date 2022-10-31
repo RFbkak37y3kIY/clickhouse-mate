@@ -1,5 +1,13 @@
 <div class="login-form-group" *ngIf="!isAccess" #login>
     <mat-card class="card">
+        <button
+            mat-icon-button
+            (click)="onCancel()"
+            style="float: right"
+            aria-label="Example icon button with a vertical three dot icon"
+        >
+            <mat-icon>close</mat-icon>
+        </button>
         <mat-card-content>
             <div class="flex-column" style="width: 750px">
                 <div>
@@ -136,7 +144,7 @@
                     <button
                         style="margin-right: 0.5rem"
                         mat-raised-button
-                        (click)="isAccess = !isAccess"
+                        (click)="onCancel()"
                         cdkFocusInitial
                     >
                         cancel

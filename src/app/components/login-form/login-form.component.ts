@@ -84,11 +84,16 @@ export class LoginFormComponent implements OnInit, AfterViewInit {
     @Output() ready: EventEmitter<any> = new EventEmitter();
     @Output() testConnection: EventEmitter<any> = new EventEmitter();
     @Output() changeDbItems: EventEmitter<any> = new EventEmitter();
+    @Output() cancel: EventEmitter<any> = new EventEmitter();
+
     @ViewChild('dbServer') connectionList: any;
 
     constructor(private cdr: ChangeDetectorRef) {
     }
-
+    onCancel(): void {
+        this.isAccess = !this.isAccess;
+        this.cancel.emit();
+    }
     ngOnInit() {
         const localDBList = getStorage('dbItems');
         if (localDBList?.length > 0) {
@@ -99,12 +104,12 @@ export class LoginFormComponent implements OnInit, AfterViewInit {
                 this.dbItems.push(connect);
             })
             // if (!this.settings) {
-                this.settings = this.dbItems[0];
-                this.cdr.detectChanges();
+            this.settings = this.dbItems[0];
+            this.cdr.detectChanges();
             // }
         } else {
             const connect = shallowClone(this.emptyConnectionTemplate);
-            connect.value = Object.assign({}, connect.value, this.settings||{});
+            connect.value = Object.assign({}, connect.value, this.settings || {});
 
             this.dbItems = [connect];
             this.cdr.detectChanges();
@@ -119,7 +124,7 @@ export class LoginFormComponent implements OnInit, AfterViewInit {
         return b && c;
     }
     ngAfterViewInit() {
-            this.selectConnection();
+        this.selectConnection();
         // const c = () => {
         //     const listItem = this.connectionList?.options?.find(
         //         (connection: any) => connection?.value?.value?.dbLink === this.settings?.dbLink
