@@ -68,6 +68,86 @@ export class HomePageComponent implements OnInit {
         'SHOW DATABASES',
         'SHOW TABLES',
     ];
+    FluxPopularQueries: any = [
+        {
+            key: 'Version',
+            value: `import "array"
+            import "runtime"
+            array.from(rows: [{version: runtime.version()}])`,
+        }, {
+            key: 'Generate',
+            value: `import g "generate"
+            g.from(start: 2022-04-01T00:00:00Z, stop: 2022-04-01T00:03:00Z, count: 5, fn: (n) => n+1)`,
+        }, {
+            key: 'Sample Data', value:
+                `import "sampledata"
+
+            sampledata.int()
+                |> group(columns: ["_time", "tag"])`,
+        }, {
+            key: 'BTC', value: `import "array"
+import "experimental/json"
+import "experimental/http/requests"
+import "strings"
+import "regexp"
+import "experimental/array"
+import "types"
+
+api_key = "8e90abe4-b320-4af7-8591-08d29a6e5f1c"
+url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?CMC_PRO_API_KEY=$\{api_key\}&limit=10"
+
+response = requests.get(url:url)
+json_s = string(v: response.body)
+
+s1 = regexp.replaceAllString(r: /"platform":(null,|\{[^\}]+\},)/, v: json_s, t:"")
+s2 = strings.replaceAll(v: s1, t: "\"self_reported_circulating_supply\":null,", u: "",)
+s3 = strings.replaceAll(v: s2, t: "\"self_reported_market_cap\":null,", u: "")
+s4 = strings.replaceAll(v: s3, t: "\"max_supply\":null,", u: "\"max_supply\": 0,")
+s5 = strings.replaceAll(v: s4, t: "\"error_message\":null,", u: "")
+s6 = strings.replaceAll(v: s5, t: "\"notice\":null,", u: "")
+data = json.parse(data: bytes(v: s6))
+array.from(rows: data.data |>
+    array.map(
+    fn: (x) => ({ price:x.quote.USD.price, name: x.name, symbol: x.symbol, _time: time(v: x.last_updated), has_payment: length(arr: x.tags |> array.filter(fn: (x) => x == "payments"))
+})))`,
+        }, {
+            key: 'Fetch CSV', value: `import "csv"
+import "experimental"
+import "experimental/http/requests"
+
+response = requests.get(
+    url: "https://github.com/aws-samples/aws-fraud-detector-samples/blob/master/data/registration_data_20K_minimum.csv?raw=true",
+    body: bytes(v: "example-request-body")
+)
+
+csv.from(csv: string(v: response.body), mode: "raw")`,
+        }, {
+            key: 'HTTP',
+            value: `import "experimental/http/requests"
+
+            response = requests.post(url: "http://example.com")
+            requests.peek(response: response)`,
+        }, {
+            key: 'HTTP JSON',
+            value: `import "experimental/http/requests"
+import ejson "experimental/json"
+import "json"
+import "array"
+
+response =
+        requests.post(
+            url: "https://goolnk.com/api/v1/shorten",
+            body: json.encode(v: {url: "http://www.influxdata.com"}),
+            headers: ["Content-Type": "application/json"],
+        )
+
+data = ejson.parse(data: response.body)
+array.from(rows: [data])`,
+        }, {
+            key: 'Prom Scrape', value: `import "experimental/prometheus"
+
+prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
+        }];
     _SqlArchive: any = [];
     isAuthenticated = false;
 
@@ -166,6 +246,7 @@ export class HomePageComponent implements OnInit {
             this.connectToDB().then(async () => {
                 this.readyToWork = true;
                 await this.getDynamicDictionary();
+                this.cdr.detectChanges();
             });
         }
         // console.log(this.currentRow.size)
@@ -212,6 +293,9 @@ export class HomePageComponent implements OnInit {
         stack(queryList.shift())
     }
     async initDbTree() {
+        if (this.isFlux) {
+            return await promiseWait(0);
+        }
         if (getParam.kiosk && !getParam.panel) {
 
             return await promiseWait(0);
@@ -291,13 +375,13 @@ export class HomePageComponent implements OnInit {
 
     formatData(data: any) {
         data = data || { meta: [], data: [] };
-        console.log('0', {data});
+        console.log('0', { data });
         try {
             if (this.isFlux) {
                 data = convertFlux(data)
             }
         } catch (err) { }
-        console.log('1', {data});
+        console.log('1', { data });
         if (typeof data !== 'object') {
             this.details = data;
         } else {

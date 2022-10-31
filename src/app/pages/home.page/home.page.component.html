@@ -70,6 +70,7 @@
         >
             <mat-accordion class="dashboard-accordion">
                 <mat-expansion-panel
+                    *ngIf="!isFlux"
                     hideToggle
                     [expanded]="!!dbTreeData && dbTreeData.length > 0"
                 >
@@ -91,17 +92,30 @@
                         ></tree-filter>
                     </div>
                 </mat-expansion-panel>
-                <mat-expansion-panel hideToggle>
+                <mat-expansion-panel [expanded]="isFlux" hideToggle>
                     <mat-expansion-panel-header>
                         <mat-panel-title> Query Presets </mat-panel-title>
                     </mat-expansion-panel-header>
-                    <div
-                        class="archive-line"
-                        *ngFor="let item of PopularQueries"
-                        (click)="SQL(item)"
-                    >
-                        {{ item }}
-                    </div>
+                    <ng-container *ngIf="!isFlux; else isFLUX">
+                        <div
+                            class="archive-line"
+                            *ngFor="let item of PopularQueries"
+                            (click)="SQL(item)"
+                        >
+                            {{ item }}
+                        </div>
+
+                    </ng-container>
+                    <ng-template #isFLUX>
+                        <div
+                            class="archive-line"
+                            *ngFor="let i of FluxPopularQueries "
+                            (click)="SQL(i.value)"
+                        >
+                            {{ i.key }}
+                        </div>
+                    </ng-template>
+
                 </mat-expansion-panel>
                 <mat-expansion-panel hideToggle>
                     <mat-expansion-panel-header>
