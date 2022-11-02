@@ -19,8 +19,9 @@ export class MonacoWrapperComponent implements OnInit {
     @Output() ready: any = new EventEmitter<string>();
 
     editorOptions = {
-        theme: 'vs',
-        language: 'scss',
+        // language: 'planetext',
+        language: 'flux',
+        theme: 'flux-theme',
 
         // minimap: false
     };
@@ -29,7 +30,7 @@ export class MonacoWrapperComponent implements OnInit {
     FROM call
     ORDER BY
     call.employee_id ASC,
-    call.start_time ASC;`;//'function x() {\n\tconsole.log("Hello world!");\n}';
+    call.start_time ASC;`;
 
     constructor() { }
 

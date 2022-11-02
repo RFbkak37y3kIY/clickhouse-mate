@@ -29,17 +29,8 @@ import { reducers, metaReducers } from './reducers';
 import { EffectsModule } from '@ngrx/effects';
 import { MonacoEditorModule, NgxMonacoEditorConfig } from 'ngx-monaco-editor';
 import { MonacoWrapperComponent } from './components/monaco-wrapper/monaco-wrapper.component';
+import { monacoConfig } from './components/monaco-wrapper/monaco-config';
 
-const monacoConfig: NgxMonacoEditorConfig = {
-    // baseUrl: 'app-name/assets',
-    // configure base path cotaining monaco-editor directory after build default: './assets'
-    defaultOptions: { scrollBeyondLastLine: false },
-    // pass default options to be used
-    onMonacoLoad: () => {
-        console.log((<any>window).monaco);
-    }
-    // here monaco object will be available as window.monaco use this function to extend monaco editor functionalities.
-};
 @NgModule({
     declarations: [
         AppComponent,
