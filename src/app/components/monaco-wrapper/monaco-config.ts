@@ -70,7 +70,8 @@ export const monacoConfig: NgxMonacoEditorConfig = {
                 { token: 'string', foreground: '#009966' },
                 { token: 'variable', foreground: '#333333' },
                 { token: 'number', foreground: '#0000FF' },
-                { token: 'operator', foreground: '#9900FF' },
+                { token: 'operator', foreground: '#FF00FF' },
+                { token: 'brackets', foreground: '#0000FF' },
             ],
             colors: []
         })
