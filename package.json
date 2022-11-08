@@ -1,6 +1,6 @@
 {
   "name": "click-house-play",
-  "version": "1.0.38",
+  "version": "1.0.39",
   "scripts": {
     "ng": "ng",
     "start:chm": "ng serve --open --configuration chm",
