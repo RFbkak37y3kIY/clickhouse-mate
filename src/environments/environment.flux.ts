@@ -1,5 +1,5 @@
 export const environment = {
     production: true,
-    isFlux: false,
+    isFlux: true,
 };
 console.log(environment);

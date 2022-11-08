@@ -3,8 +3,10 @@
   "version": "1.0.38",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --open",
-    "build": "ng build",
+    "start:chm": "ng serve --open --configuration chm",
+    "start:flux": "ng serve --open --configuration flux",
+    "build:chm": "ng build --configuration chm",
+    "build:flux": "ng build --configuration flux",
     "build:demo": "ng build --base-href='/clickhouse-mate/'",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"

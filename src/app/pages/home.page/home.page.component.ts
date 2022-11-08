@@ -1,3 +1,4 @@
+import { environment } from './../../../environments/environment';
 import { convertFlux, Functions } from '@app/helper/functions';
 import { DocsService } from '@app/services/docs.service';
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, HostListener } from '@angular/core';
@@ -5,10 +6,11 @@ import { ApiService, FLUX_VERSION, QUERY_LIST } from 'src/app/services/api.servi
 import { emitWindowResize, getStorage, saveToFile, setLink, setStorage } from '@app/helper/windowFunctions';
 import { Row } from '@app/models/grid.model';
 import { Dictionary } from '@app/components/ace-editor-ext/dictionary-default';
-import { promiseWait, cloneObject } from '@app/helper/functions';
+import { promiseWait } from '@app/helper/functions';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogKioskComponent } from '../dialogs/dialog-kiosk/dialog-kiosk.component';
 import { getParam, HashParams } from '@app/services/get-params.service';
+
 
 @Component({
     templateUrl: './home.page.component.html',
@@ -26,14 +28,13 @@ export class HomePageComponent implements OnInit {
     dbLink: string = '';
     dbLogin: string = '';
     dbPassword: string = '';
-    isFlux: boolean = false;
+    isFlux: boolean = !!environment.isFlux;
 
     sqlRequest: any = '';
     _selectedDB: any;
     readyToWork = false;
-    set selectedDB(val: any) {
-        // console.log('set new value', val);
 
+    set selectedDB(val: any) {
         if (this.dbLink === val?.value?.dbLink &&
             this.dbLogin === val?.value?.dbLogin &&
             this.dbPassword === val?.value?.dbPassword
@@ -55,6 +56,7 @@ export class HomePageComponent implements OnInit {
     get selectedDB() {
         return this._selectedDB;
     }
+
     dictionary: Dictionary[] = [];
 
     dataForFile: any = null;
@@ -187,14 +189,21 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
         private apiService: ApiService,
         private docsService: DocsService,
         private cdr: ChangeDetectorRef,
-        public dialog: MatDialog,
-        // private alertService: AlertService
+        public dialog: MatDialog
     ) {
         if (getParam.kiosk) {
             this.isDarkMode = getParam.mode === 'dark';
         }
         if (getParam.query) {
-            this.sqlRequest = getParam.query;
+            // `template:${templ.key}`
+            if ((getParam.query + '').match(/^template\:/g)) {
+                const value = this.FluxPopularQueries.find((i: any) => i.key === getParam?.query?.split(':')?.[1])?.value;
+                this.sqlRequest = value;
+                console.log(getParam.query.split(':'), this.sqlRequest)
+            } else {
+
+                this.sqlRequest = getParam.query;
+            }
         }
     }
 
@@ -211,7 +220,7 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
                     dbLink: AUTH_DATA.dbURL,
                     dbLogin: AUTH_DATA.login,
                     dbPassword: AUTH_DATA.password,
-                    isFlux: !!AUTH_DATA.isFlux,
+                    isFlux: !!environment.isFlux,
                     isSucceeded: true
                 },
                 viewValue: (AUTH_DATA.dbURL + '').match(rx)?.[0],
@@ -237,12 +246,12 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
             dbURL: getParam.db_host,
             login: getParam.db_login,
             password: getParam.db_pass,
-            isFlux: getParam.isFlux
+            isFlux: environment.isFlux
         } : getStorage('AUTH_DATA')) || {
             dbURL: location.origin,
             login: 'default',
             password: '',
-            isFlux: false
+            isFlux: environment.isFlux
         };
         // console.log("auth", !!auth?.dbURL)
 
@@ -250,7 +259,7 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
             this.dbLink = auth.dbURL;
             this.dbLogin = auth.login;
             this.dbPassword = auth.password;
-            this.isFlux = auth.isFlux;
+            this.isFlux = environment.isFlux;
         } else {
             this.isAccess = false;
         }
@@ -275,6 +284,9 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
 
     }
     async getDynamicDictionary() {
+        if (environment.isFlux) {
+            return;
+        }
         if (getParam.kiosk && !getParam.query_field) {
             return await promiseWait(0);
         }
@@ -305,7 +317,7 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
         stack(queryList.shift())
     }
     async initDbTree() {
-        if (this.isFlux) {
+        if (environment.isFlux) {
             return await promiseWait(0);
         }
         if (getParam.kiosk && !getParam.panel) {
@@ -389,7 +401,7 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
         data = data || { meta: [], data: [] };
         console.log('0', { data });
         try {
-            if (this.isFlux) {
+            if (environment.isFlux) {
                 data = convertFlux(data)
             }
         } catch (err) { }
@@ -413,33 +425,36 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
         if (!location.hash) {
             return false;
         }
-        // console.log((location.hash + '').replace('#', ''))
         try {
-            // const sqlRequest = atob((location.hash + '').replace('#', ''));
             const sqlRequest = getParam.query;
-            this.sqlRequest = sqlRequest;
+            if ((getParam.query + '').match(/^template\:/g)) {
+                const value = this.FluxPopularQueries.find((i: any) => i.key === getParam?.query?.split(':')?.[1])?.value;
+                this.sqlRequest = value;
+                console.log(getParam?.query?.split(':'), this.sqlRequest)
+            } else {
+
+                this.sqlRequest = getParam.query;
+            }
+            // this.sqlRequest = sqlRequest;
             this.SQL(this.sqlRequest);
             this.isAccess = true;
             return true;
         } catch (error) {
-            // console.log('ERROR', error)
-            // location.hash = '';
             return false;
         }
     }
 
     setHash() {
-        // if (!getParam.kiosk) {
-        //     location.hash = '#query=' + encodeURIComponent(this.sqlRequest);
-        // } else {
-        location.hash = setLink(this.sqlRequest, {
+        const templ = this.FluxPopularQueries.find( (i: any) => i.value === this.sqlRequest)
+        console.log({ templ, from: Object.entries(this.FluxPopularQueries) });
+        const q = templ?.key ? `template:${templ.key}` :this.sqlRequest
+        location.hash = setLink(q, {
             dbLink: this.dbLink,
             dbLogin: this.dbLogin,
             dbPassword: this.dbPassword,
-            isFlux: this.isFlux,
+            isFlux: environment.isFlux,
         });
-        // console.log(location.hash)
-        // }
+
     }
 
     keyOfSqlHistory() {
@@ -447,12 +462,8 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
     }
 
     async SQL(sqlStr: string, isAuthenticated: boolean = false) {
-
-
-        // await promiseWait(100);
         if (!sqlStr) {
             this.isLoadingDetails = false;
-            // this.alertService.error('ERROR: SQL query is empty!')
             return false;
         }
         if (!isAuthenticated) {
@@ -477,7 +488,7 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
             const response = await this.apiService.runQuery(sqlStr);
             if (!isAuthenticated) {
                 this.formatData(response);
-                if (this.isFlux) {
+                if (environment.isFlux) {
                     this.dataForFile = convertFlux(response);
                     this.dataForFile.statistics.bytes_read = this.dataForFile.statistics.bytes_read || new Blob([response]).size;
                 } else {
@@ -486,9 +497,7 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
                 console.log({ dataForFile: this.dataForFile });
             }
             this.errorMessage = '';
-            // if (!isAuthenticated) {
             this.isLoadingDetails = false;
-            // }
             this.cdr.detectChanges();
             return true;
 
@@ -506,9 +515,7 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
                 })
             }
 
-            // if (!isAuthenticated) {
             this.isLoadingDetails = false;
-            // }
             this.cdr.detectChanges();
 
             return false;
@@ -516,9 +523,7 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
     }
 
     onClickRun(event?: any): void {
-        // console.log(event);
         this.sqlRequest = event;
-
         this.SQL(this.sqlRequest);
     }
     async connectToDB(event?: any, isTestConnection = false) {
@@ -527,19 +532,18 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
             this.dbLink = event.dbLink;
             this.dbLogin = event.dbLogin;
             this.dbPassword = event.dbPassword;
-            this.isFlux = !!event.isFlux;
+            this.isFlux = !!environment.isFlux;
         }
         const auth = {
             dbURL: this.dbLink,
             login: this.dbLogin,
             password: this.dbPassword,
-            isFlux: this.isFlux,
+            isFlux: environment.isFlux,
         };
         this.apiService.setLoginData(auth);
-        // const res = await this.SQL(QUERY_LIST.getDatabases, true);
         let res;
         try {
-            await this.apiService.runQuery(this.isFlux ? FLUX_VERSION : QUERY_LIST.getDatabases)
+            await this.apiService.runQuery(environment.isFlux ? FLUX_VERSION : QUERY_LIST.getDatabases)
             res = true;
         } catch (e) {
             res = false;
@@ -551,17 +555,13 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
             if (!isTestConnection) {
                 setStorage('AUTH_DATA', auth);
                 this.checkDBList();
-                // this.formatData({ meta: [], data: [] });
                 this.isAccess = true;
                 this.getHash();
-                // this.cdr.detectChanges();
 
                 await promiseWait(100);
-                // this.cdr.detectChanges();
-
                 await this.initDbTree();
-                this.cdr.detectChanges();
 
+                this.cdr.detectChanges();
                 this.isLoadingDetails = false;
             } else {
                 this.authSuccessMessage = 'Connection is successfully established.';
@@ -570,7 +570,6 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
                     this.cdr.detectChanges();
                 }, 5000);
             }
-            // this.isAccess = false;
             this.cdr.detectChanges();
             return true;
         } else {
@@ -616,12 +615,10 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
         sqlStr += ` ${FORMAT} ` + (isCompact ? 'JSONCompact' : type);
 
         this.apiService.runQuery(sqlStr).then(result => {
-            // console.log(result, sqlStr)
             if (type === 'csv') {
                 saveToFile(result, fname + format);
             } else {
                 saveToFile(JSON.stringify(result, null, 2), fname + format);
-
             }
         })
     }
@@ -654,8 +651,6 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
         } else { // hours
             return `${o.hours}:${o.min}:${o.sec}.${o.ms} hour(s)`;
         }
-
-
     }
 
     getStatistic(dataForFile: any): string {
@@ -671,15 +666,6 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
             (parseFloat(stat?.elapsed || 0) || 0.001)
         );
 
-        // console.log({
-        //     stat,
-        //     rows,
-        //     elapsed,
-        //     rows_read,
-        //     bytes_read,
-        //     rowsPerSec,
-        //     bytesPerSec
-        // })
         return [
             `${rows} rows in set. Elapsed ${elapsed}`,
             rows_read && ` Processed ${rows_read} rows`,
@@ -693,7 +679,6 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
         this.selectedDB = DBItems.find((item: any) => {
             return item.value.dbLink === this.dbLink
         })
-        // console.log(this.dbItems, this.selectedDB);
         requestAnimationFrame(() => {
             this.cdr.detectChanges();
         })
@@ -706,12 +691,11 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
                 dbLogin: this.dbLogin,
                 dbPassword: this.dbPassword,
                 sqlRequest: this.sqlRequest,
-                isFlux: this.isFlux
+                isFlux: environment.isFlux
             },
         });
 
         dialogRef.afterClosed().subscribe((result: any) => {
-            // console.log('The dialog was closed', { result });
             requestAnimationFrame(() => {
                 this.cdr.detectChanges();
             });
@@ -719,7 +703,6 @@ prometheus.scrape(url: "https://mon.jaytaala.com/metrics")`
     }
     removeItemHistory(item: any): void {
         this.SqlArchive = this.SqlArchive.filter(i => i !== item);
-        // console.log(this.SqlArchive, item);
         localStorage.setItem(this.keyOfSqlHistory(), JSON.stringify(this.SqlArchive));
     }
 }

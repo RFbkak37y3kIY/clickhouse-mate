@@ -12,9 +12,13 @@
             <div class="flex-column" style="width: 750px">
                 <div>
                     <img
+                        *ngIf="!isFlux"
                         src="assets/image/big-logo.png"
                         style="max-width: 90vw"
                     />
+                    <div *ngIf="isFlux" class="flux-name">
+                        <h1>FLUX Mate</h1>
+                    </div>
                 </div>
                 <div class="error-message" mat-flat-button *ngIf="errorMessage">
                     {{ errorMessage }}
@@ -132,11 +136,11 @@
                                     [(ngModel)]="settings.dbPassword"
                                 />
                             </mat-form-field>
-                            <mat-slide-toggle
+                            <!-- <mat-slide-toggle
                                 color="primary"
                                 [(ngModel)]="settings.isFlux"
                                 >is Flux server</mat-slide-toggle
-                            >
+                            > -->
                         </div>
                     </mat-grid-tile>
                 </mat-grid-list>

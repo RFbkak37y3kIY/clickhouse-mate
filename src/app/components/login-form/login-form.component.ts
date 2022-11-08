@@ -3,6 +3,7 @@ import {
     ChangeDetectionStrategy, ViewChild, ChangeDetectorRef, AfterViewInit
 } from '@angular/core';
 import { getStorage, setStorage } from '@app/helper/windowFunctions';
+import { environment } from '@environments/environment';
 
 function shallowClone(obj: any) {
     return Object.create(
@@ -18,6 +19,7 @@ const NEW_CONNECT = '(new connect)';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoginFormComponent implements OnInit, AfterViewInit {
+    isFlux = environment.isFlux
     _isAccess: boolean = false;
     @Input() set isAccess(val) {
         // console.log("set isAccess", val);

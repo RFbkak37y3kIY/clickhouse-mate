@@ -45,7 +45,7 @@ export function setLink(query: string = '', options: any = null) {
                 config.db_host = options?.dbLink || value;
                 break;
             case 'db_login':
-                config.db_login = options?.dbLogin ||value;
+                config.db_login = options?.dbLogin || value;
                 break;
             case 'db_pass':
                 config.db_pass = options?.dbPassword || value;
@@ -74,6 +74,7 @@ export function setLink(query: string = '', options: any = null) {
         }
     })
     config.query = decodeURIComponent(query + '');
+
     return '#' +
         Object.entries(config).map(([key, value]: [string, any]) => {
             if (key !== 'flux' && !value && typeof value !== 'boolean') {
@@ -82,30 +83,22 @@ export function setLink(query: string = '', options: any = null) {
             if (key === 'query') {
                 return `${key}=${encodeURIComponent(value + '')}`
             }
-            // if (
-            //     +config.kiosk === 1 &&
-            //     key !== 'query'
-            // ) {
-                if (
-                    (key === 'panel' && +value === 1) ||
-                    (key === 'query_field' && +value === 1) ||
-                    (key === 'table' && +value === 1) ||
-                    (key === 'mode' && value === 'light') ||
-                    (key === 'chart' && +value === 1)
-                ) {
-                    return '';
-                }
-                if (key === 'mode') {
-                    // console.log([key, value]);
-                    return value ? 'mode=dark' : '';
-                }
+            if (
+                (key === 'panel' && +value === 1) ||
+                (key === 'query_field' && +value === 1) ||
+                (key === 'table' && +value === 1) ||
+                (key === 'mode' && value === 'light') ||
+                (key === 'chart' && +value === 1)
+            ) {
+                return '';
+            }
+            if (key === 'mode') {
+                return value ? 'mode=dark' : '';
+            }
 
-                if (typeof value === 'boolean') {
-                    return `${key}=${+value}`
-                }
-            // } else {
-            //     return '';
-            // }
+            if (typeof value === 'boolean') {
+                return `${key}=${+value}`
+            }
 
             return `${key}=${value}`
 
